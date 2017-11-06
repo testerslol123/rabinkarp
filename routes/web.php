@@ -11,9 +11,8 @@
 |
 */
 
-Route::get('/', function () {
-    return view('home');
-});
+Route::get('/', 'HomeController@index');
+
 
 Route::get('login', function() {
     return view('login');
@@ -26,3 +25,15 @@ Route::get('user', function() {
 Route::get('register', function() {
     return view('register');
 });
+
+Route::post('/document', 'HomeController@submitDocument');
+
+
+Route::get('/testdocument', 'HomeController@testdocument');
+Route::get('/testdocument2', 'HomeController@testdocument2');
+Route::get('/testdocument3', 'HomeController@testdocument3');
+
+
+Auth::routes();
+
+
