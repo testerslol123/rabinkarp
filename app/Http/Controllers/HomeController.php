@@ -6,132 +6,122 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Http\UploadedFile;
 use File;
+use Storage;
 
 class HomeController extends Controller
 {
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('home');
     }
 
     public function testdocument() {
-        // Read contents
-// $name = basename(__FILE__, '.php');
-// $source = __DIR__ . "/resources/{$name}.docx";
-// echo date('H:i:s'), " Reading contents from `{$source}`", EOL;
-// $phpWord = \PhpOffice\PhpWord\IOFactory::load($source);
-// // Save file
-// echo write($phpWord, basename(__FILE__, '.php'), $writers);
-
         $source = base_path() . '/ext/bab4.docx';
         echo $source;
 
-        $phpWord = new \PhpOffice\PhpWord\PhpWord();
-        $document = $phpWord->loadTemplate($source);
-        $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-        $xmlWriter->save("php://output");
-        // $phpWord = IOFactory::createReader('Word2007')->load($source);
-
-        // foreach($phpWord->getSections() as $section) {
-        //     foreach($section->getElements() as $element) {
-        //         if(method_exists($element,'getText')) {
-        //             echo($element->getText() . "<br>");
-        //         }
-        //     }
-        // }
-
-        // $phpWord = \PhpOffice\PhpWord\IOFactory::load($source);
-        // echo $phpWord;
-        // return view('checkDocs');
+        echo $this->read_docx($source);
     }
-
-    public function testdocument2 () {
-            // Creating the new document...
-            $phpWord = new \PhpOffice\PhpWord\PhpWord();
-
-            /* Note: any element you append to a document must reside inside of a Section. */
-
-            // Adding an empty Section to the document...
-            $section = $phpWord->addSection();
-            // Adding Text element to the Section having font styled by default...
-            $section->addText(
-                '"Learn from yesterday, live for today, hope for tomorrow. '
-                    . 'The important thing is not to stop questioning." '
-                    . '(Albert Einstein)'
-            );
-
-            /*
-             * Note: it's possible to customize font style of the Text element you add in three ways:
-             * - inline;
-             * - using named font style (new font style object will be implicitly created);
-             * - using explicitly created font style object.
-             */
-
-            // Adding Text element with font customized inline...
-            $section->addText(
-                '"Great achievement is usually born of great sacrifice, '
-                    . 'and is never the result of selfishness." '
-                    . '(Napoleon Hill)',
-                array('name' => 'Tahoma', 'size' => 10)
-            );
-
-            // Adding Text element with font customized using named font style...
-            $fontStyleName = 'oneUserDefinedStyle';
-            $phpWord->addFontStyle(
-                $fontStyleName,
-                array('name' => 'Tahoma', 'size' => 10, 'color' => '1B2232', 'bold' => true)
-            );
-            $section->addText(
-                '"The greatest accomplishment is not in never falling, '
-                    . 'but in rising again after you fall." '
-                    . '(Vince Lombardi)',
-                $fontStyleName
-            );
-
-            // Adding Text element with font customized using explicitly created font style object...
-            $fontStyle = new \PhpOffice\PhpWord\Style\Font();
-            $fontStyle->setBold(true);
-            $fontStyle->setName('Tahoma');
-            $fontStyle->setSize(13);
-            $myTextElement = $section->addText('"Believe you can and you\'re halfway there." (Theodor Roosevelt)');
-            $myTextElement->setFontStyle($fontStyle);
-
-            // Saving the document as OOXML file...
-            $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-            $objWriter->save('helloWorld.docx');
-
-            // Saving the document as ODF file...
-            $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'ODText');
-            $objWriter->save('helloWorld.odt');
-
-            // Saving the document as HTML file...
-            $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'HTML');
-            $objWriter->save('helloWorld.html');
-
-            /* Note: we skip RTF, because it's not XML-based and requires a different example. */
-            /* Note: we skip PDF, because "HTML-to-PDF" approach is used to create PDF documents. */
-    }
-
-
-
-
-
 
     public function submitDocument(Request $request) {
-        if($request->hasFile('doc1')) {
-            print_r($request->doc1);
-        }
+        $file = $request->file('doc1');
 
-        if($request->hasFile('doc2')) {
-            print_r($request->doc2);
-        }
+        //Display File Name
+        echo 'File Name: '.$file->getClientOriginalName();
+        echo '<br>';
+
+        //Display File Extension
+        echo 'File Extension: '.$file->getClientOriginalExtension();
+        echo '<br>';
+
+        //Display File Real Path
+        echo 'File Real Path: '.$file->getRealPath();
+        echo '<br>';
+
+        //Display File Size
+        echo 'File Size: '.$file->getSize();
+        echo '<br>';
+
+        //Display File Mime Type
+        echo 'File Mime Type: '.$file->getMimeType();
+
+        //Move Uploaded File
+        $destinationPath = 'uploads';
+        $file->move($destinationPath,$file->getClientOriginalName());
+
+        echo "<br/>";
+        $fileDummy = base_path() . '/uploads/' . $file->getClientOriginalName();
+        $stemming_doc1 = $this->stemming($fileDummy);
+        $stopword_doc1 = $this->stopWord($stemming_doc1);
+        print_r($stopword_doc1);
     }
+
+    private function stemming($fileDummy) {
+        $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
+        $stemmer  = $stemmerFactory->createStemmer();
+        $sentence = $this->read_docx($fileDummy);
+        $output   = $stemmer->stem($sentence);
+        return $output;
+    }
+
+    private function stopWord($hasilStemming) {
+        $words = explode(" ",strtolower($hasilStemming));
+        $numWordsIn = count($words);
+        $stopWords = explode("\n", strtolower(asset('ext/stop_words.txt')));
+
+        print_r($stopWords);
+        $words = array_diff($words,$stopWords);
+        $words = array_values($words);//re-indexes array
+        $numWordsOut = count($words);
+        return $words;
+    }
+
+    private function read_docx($filename){
+
+        $striped_content = '';
+        $content = '';
+
+        $zip = zip_open($filename);
+
+        if (!$zip || is_numeric($zip)) return false;
+
+        while ($zip_entry = zip_read($zip)) {
+            if (zip_entry_open($zip, $zip_entry) == FALSE) continue;
+
+            if (zip_entry_name($zip_entry) != "word/document.xml") continue;
+
+            $content .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+
+            zip_entry_close($zip_entry);
+        }// end while
+
+        zip_close($zip);
+
+        $content = str_replace('</w:r></w:p></w:tc><w:tc>', " ", $content);
+        $content = str_replace('</w:r></w:p>', "\r\n", $content);
+        $striped_content = strip_tags($content);
+
+        return $striped_content;
+    }
+
+    private function read_doc($filename) {
+        $fileHandle = fopen($filename, "r");
+        $line = @fread($fileHandle, filesize($this->filename));   
+        $lines = explode(chr(0x0D),$line);
+        $outtext = "";
+        foreach($lines as $thisline)
+          {
+            $pos = strpos($thisline, chr(0x00));
+            if (($pos !== FALSE)||(strlen($thisline)==0))
+              {
+              } else {
+                $outtext .= $thisline." ";
+              }
+          }
+         $outtext = preg_replace("/[^a-zA-Z0-9\s\,\.\-\n\r\t@\/\_\(\)]/","",$outtext);
+        return $outtext;
+    }
+
 
     public function testdocument3 () {
         $content = File::get(base_path() .'/ext/file.txt');

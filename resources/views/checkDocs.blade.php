@@ -3,7 +3,7 @@
 @section('content')
 
     <div class="container">
-      <form method="POST" action="{{url('document')}}">
+      <form method="POST" action="{{url('document')}}" enctype="multipart/form-data">
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
