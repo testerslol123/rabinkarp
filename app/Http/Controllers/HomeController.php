@@ -16,7 +16,6 @@ class HomeController extends Controller
     public function index()
     {
         if(Auth::check()) {
-
             return view('home')->with('userInfo', Auth::user());
         } else {
             return view('home');
@@ -35,6 +34,7 @@ class HomeController extends Controller
         $file2 = $request->file('doc2');
 
         $uploadFile1 = $this->uploadFile($file1);
+        echo "<br/>";
         $uploadFile2 = $this->uploadFile($file2);
 
         echo "<br/>";
@@ -44,36 +44,47 @@ class HomeController extends Controller
         $stemming_doc2 = $this->stemming($uploadFile2);
         $stopword_doc2 = $this->stopWord($stemming_doc2);
         // print_r($stopword_doc1);
-        // foreach($stopword_doc1 as $stopword) {
-        //     echo $stopword;
-        //     echo "<br/>";
-        // }
-        // echo "------------";
-        // echo "<br/>";
 
-        $kumpulanKata = '';
-        foreach($stopword_doc2 as $stopword) {
-            $kumpulanKata = $kumpulanKata . ' ' . $stopword;
-            // echo $stopword;
-            // echo "<br/>";
+        $kumpulanKataDoc1 = '';
+        foreach($stopword_doc1 as $stopword) {
+            $kumpulanKataDoc1 = $kumpulanKataDoc1 . ' ' . $stopword;
         }
 
-        echo $this->rabinKarp('butuh', $kumpulanKata);
-        echo $this->DiceMatch('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam bibendum lacinia leo at vulputate. Aenean efficitur ante urna, sit amet convallis tellus semper et. Phasellus purus metus, pulvinar eget nunc vitae, aliquam semper neque. Vivamus ante magna, porttitor sit amet ex a, dapibus consectetur arcu. Pellentesque vel nulla in nulla dictum fringilla. Phasellus egestas nibh nec pulvinar tincidunt. Nam gravida velit nec pharetra blandit. Donec ut neque enim. Maecenas at lectus eget turpis aliquam posuere.
+        $kumpulanKataDoc2 = '';
+        foreach($stopword_doc2 as $stopword) {
+            $kumpulanKataDoc2 = $kumpulanKataDoc2 . ' ' . $stopword;
+        }
 
-Duis vulputate lacinia iaculis. Vestibulum nec mi scelerisque, bibendum sapien nec, mattis elit. Fusce eu lectus sed lectus porttitor iaculis. Nunc maximus magna pulvinar blandit convallis. Maecenas sit amet ultricies mauris. Vivamus eu sodales neque. Duis vitae pellentesque ex. Phasellus dapibus nec eros vitae posuere. Aliquam in tristique risus, nec tristique lectus. Quisque sodales viverra dui, ut egestas justo vulputate eu. Quisque elementum nec lacus at varius. Praesent purus orci, venenatis et diam nec, pellentesque mollis mauris. Maecenas ut neque nisi. Vivamus efficitur, nisi ut vestibulum fermentum, ligula sem pretium nulla, a commodo eros mauris at dolor. Sed pharetra quam non sapien rhoncus euismod.
+        $rkDoc1 = array();
+        $rkDoc2 = array();
 
-', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam bibendum lacinia leo at vulputate. Aenean efficitur ante urna, .
+        $rkString1 = '';
+        $rkString2 = '';
 
-Duis Duis  et diam nec, Maecenas ut neque nisi. Vivamus efficitur, nisi ut vestibulum fermentum, ligula sem pretium nulla, a commodo eros mauris at dolor. Sed pharetra quam non sapien rhoncus euismod.
+        foreach($stopword_doc1 as $stopword) {
+            $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc2);
+            if(!empty($hasil)) {
+                array_push($rkDoc1, $hasil);
+                $rkString1 .= ' ' . $hasil;
+            }
+        }
 
-');
+        foreach($stopword_doc2 as $stopword) {
+            $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc1);
+            if(!empty($hasil)) {
+                array_push($rkDoc2, $hasil);
+                $rkString2 .= ' ' . $hasil;
+            }
+        }
 
-
+        $similarity = $this->DiceMatch($rkString1, $rkString2);
 
         return view('hasil')->with([
             'doc1' => $stopword_doc1,
-            'doc2' => $stopword_doc2
+            'doc2' => $stopword_doc2,
+            'rkDoc1' => $rkDoc1,
+            'rkDoc2' => $rkDoc2,
+            'similarity' => $similarity,
         ]);
     }
 

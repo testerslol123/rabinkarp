@@ -48,7 +48,7 @@
                             <li><a href="{{ route('login') }}">Login</a></li>
                             <li><a href="{{ route('register') }}">Register</a></li>
                         @else
-                            @if($userInfo->is_admin == 1)
+                            @if(Auth::user()->is_admin == 1)
                             <li><a href="dashboard">Admin Dashboard</a></li>
                             @endif
                             <li class="dropdown">

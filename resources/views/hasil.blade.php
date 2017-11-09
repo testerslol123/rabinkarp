@@ -26,8 +26,14 @@
       <h4>Hasil Hash dengan Algoritma Rabin Karp</h4>
     </div>
     <div class="col-md-6">
+      @foreach($rkDoc1 as $rk)
+        <span>{ {{$rk}} } </span>
+      @endforeach
     </div>
     <div class="col-md-6">
+      @foreach($rkDoc2 as $rk2)
+        <span>{ {{$rk2}} }</span>
+      @endforeach
     </div>
   </div>
   <hr>
@@ -36,7 +42,7 @@
       <h4>Hasil Sorensen Index Similarity</h4>
     </div>
     <div class="text-center">
-      <h3>55%</h3>
+      <h3>{{$similarity * 100}} %</h3>
     </div>
   </div>
 

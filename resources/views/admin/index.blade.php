@@ -22,30 +22,21 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Position</th>
-                                <th>Office</th>
+                                <th>Email</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($userData as $user)
                             <tr>
-                                <td>Tiger Nixon</td>
-                                <td>System Architect</td>
-                                <td>Edinburgh</td>
+                                <td>{{$user->name}}</td>
+                                <td>{{$user->email}}</td>
                                 <td>
-                                    <a class="btn btn-xs btn-primary" href="{{url('/edit/user/$id')}}">EDIT</a>
-                                    <a class="btn btn-xs btn-danger" href="{{url('/delete/user/$id')}}">DELETE</a>
+                                    <a class="btn btn-xs btn-primary" href="{{url('/edituser')}}/{{$user->id}}">EDIT</a>
+                                    <a class="btn btn-xs btn-danger" href="{{url('/deleteuser')}}/{{$user->id}}">DELETE</a>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>Garrett Winters</td>
-                                <td>Accountant</td>
-                                <td>Tokyo</td>
-                                <td>
-                                    <a class="btn btn-xs btn-primary" href="{{url('/edit/user/$id')}}">EDIT</a>
-                                    <a class="btn btn-xs btn-danger" href="{{url('/delete/user/$id')}}">DELETE</a>
-                                </td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

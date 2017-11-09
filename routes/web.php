@@ -29,6 +29,11 @@ Route::get('register', function() {
 Route::post('document', 'HomeController@submitDocument');
 
 Route::get('dashboard', 'AdminController@index');
+Route::get('edituser/{user_id}', 'AdminController@edituser');
+Route::post('edituser', 'AdminController@submitEditUser');
+Route::get('deleteuser/{user_id}', 'AdminController@deleteUser');
+
+
 
 Route::get('testdocument', 'HomeController@testdocument');
 Route::get('testdocument2', 'HomeController@testdocument2');
