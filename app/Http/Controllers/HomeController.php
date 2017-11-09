@@ -50,16 +50,111 @@ class HomeController extends Controller
         // }
         // echo "------------";
         // echo "<br/>";
-        // foreach($stopword_doc2 as $stopword) {
-        //     echo $stopword;
-        //     echo "<br/>";
-        // }
+
+        $kumpulanKata = '';
+        foreach($stopword_doc2 as $stopword) {
+            $kumpulanKata = $kumpulanKata . ' ' . $stopword;
+            // echo $stopword;
+            // echo "<br/>";
+        }
+
+        echo $this->rabinKarp('butuh', $kumpulanKata);
+        echo $this->DiceMatch('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam bibendum lacinia leo at vulputate. Aenean efficitur ante urna, sit amet convallis tellus semper et. Phasellus purus metus, pulvinar eget nunc vitae, aliquam semper neque. Vivamus ante magna, porttitor sit amet ex a, dapibus consectetur arcu. Pellentesque vel nulla in nulla dictum fringilla. Phasellus egestas nibh nec pulvinar tincidunt. Nam gravida velit nec pharetra blandit. Donec ut neque enim. Maecenas at lectus eget turpis aliquam posuere.
+
+Duis vulputate lacinia iaculis. Vestibulum nec mi scelerisque, bibendum sapien nec, mattis elit. Fusce eu lectus sed lectus porttitor iaculis. Nunc maximus magna pulvinar blandit convallis. Maecenas sit amet ultricies mauris. Vivamus eu sodales neque. Duis vitae pellentesque ex. Phasellus dapibus nec eros vitae posuere. Aliquam in tristique risus, nec tristique lectus. Quisque sodales viverra dui, ut egestas justo vulputate eu. Quisque elementum nec lacus at varius. Praesent purus orci, venenatis et diam nec, pellentesque mollis mauris. Maecenas ut neque nisi. Vivamus efficitur, nisi ut vestibulum fermentum, ligula sem pretium nulla, a commodo eros mauris at dolor. Sed pharetra quam non sapien rhoncus euismod.
+
+', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam bibendum lacinia leo at vulputate. Aenean efficitur ante urna, .
+
+Duis Duis  et diam nec, Maecenas ut neque nisi. Vivamus efficitur, nisi ut vestibulum fermentum, ligula sem pretium nulla, a commodo eros mauris at dolor. Sed pharetra quam non sapien rhoncus euismod.
+
+');
+
+
 
         return view('hasil')->with([
             'doc1' => $stopword_doc1,
             'doc2' => $stopword_doc2
         ]);
     }
+
+    function DiceMatch($string1, $string2) {
+        if (empty($string1) || empty($string2)) return 0;
+
+        if ($string1 == $string2) return 1;
+
+        $strlen1 = strlen($string1);
+        $strlen2 = strlen($string2);
+
+        if ($strlen1 < 2 || $strlen2 < 2) return 0;
+
+        $length1 = $strlen1 - 1;
+        $length2 = $strlen2 - 1;
+
+        $matches = 0;
+        $i = 0;
+        $j = 0;
+
+        while ($i < $length1 && $j < $length2)
+        {
+            $a = substr($string1, $i, 2);
+            $b = substr($string2, $j, 2);
+            $cmp = strcasecmp($a, $b);
+
+            if ($cmp == 0)
+            $matches += 2;
+
+            ++$i;
+            ++$j;
+        }
+        return $matches / ($length1 + $length2);
+    }
+
+
+
+    private function rabinKarp ($needle, $haystack) {
+        $nlen = strlen($needle);
+        $hlen = strlen($haystack);
+        $nhash = 0;
+        $hhash = 0;
+
+        // Special cases that don't require the rk algo:
+        // if needle is longer than haystack, no possible match
+        if ($nlen > $hlen) {
+            return false;
+        }
+        // If they're the same size, they must just match
+        if ($nlen == $hlen) {
+            return ($needle === $haystack);
+        }
+
+        // Compute hash of $needle and $haystack[0..needle.length]
+        // This is a very primitive hashing method for illustrative purposes
+        // only. You'll want to modify each value based on its position in
+        // the string as per Gumbo's example above (left shifting)
+        for ($i = 0; $i < $nlen; ++$i) {
+            $nhash += ord($needle[$i]);
+            $hhash += ord($haystack[$i]);
+        }
+
+        // Go through each position of needle and see if
+        // the hashes match, then do a comparison at that point
+        for ($i = 0, $c = $hlen - $nlen; $i <= $c; ++$i) {
+                // If the hashes match, there's a good chance the next $nlen characters of $haystack matches $needle
+                if ($nhash == $hhash && $needle === substr($haystack, $i, $nlen)) {
+                    return $i;
+                }
+                // If we've reached the end, don't try to update the hash with
+                // the code following this if()
+                if ($i == $c) {
+                    return false;
+                }
+
+            // Update hhash to the next position by subtracting the
+            // letter we're removing and adding the letter we're adding
+            $hhash = ($hhash - ord($haystack[$i])) + ord($haystack[$i + $nlen]);
+            }
+            return false;
+        }
 
 
     private function uploadFile ($requestFile) {
