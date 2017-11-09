@@ -7,13 +7,20 @@ use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Http\UploadedFile;
 use File;
 use Storage;
+use Auth;
+
 
 class HomeController extends Controller
 {
 
     public function index()
     {
-        return view('home');
+        if(Auth::check()) {
+
+            return view('home')->with('userInfo', Auth::user());
+        } else {
+            return view('home');
+        }
     }
 
     public function testdocument() {
@@ -24,37 +31,63 @@ class HomeController extends Controller
     }
 
     public function submitDocument(Request $request) {
-        $file = $request->file('doc1');
+        $file1 = $request->file('doc1');
+        $file2 = $request->file('doc2');
 
+        $uploadFile1 = $this->uploadFile($file1);
+        $uploadFile2 = $this->uploadFile($file2);
+
+        echo "<br/>";
+        $stemming_doc1 = $this->stemming($uploadFile1);
+        $stopword_doc1 = $this->stopWord($stemming_doc1);
+
+        $stemming_doc2 = $this->stemming($uploadFile2);
+        $stopword_doc2 = $this->stopWord($stemming_doc2);
+        // print_r($stopword_doc1);
+        // foreach($stopword_doc1 as $stopword) {
+        //     echo $stopword;
+        //     echo "<br/>";
+        // }
+        // echo "------------";
+        // echo "<br/>";
+        // foreach($stopword_doc2 as $stopword) {
+        //     echo $stopword;
+        //     echo "<br/>";
+        // }
+
+        return view('hasil')->with([
+            'doc1' => $stopword_doc1,
+            'doc2' => $stopword_doc2
+        ]);
+    }
+
+
+    private function uploadFile ($requestFile) {
         //Display File Name
-        echo 'File Name: '.$file->getClientOriginalName();
+        echo 'File Name: '.$requestFile->getClientOriginalName();
         echo '<br>';
 
         //Display File Extension
-        echo 'File Extension: '.$file->getClientOriginalExtension();
+        echo 'File Extension: '.$requestFile->getClientOriginalExtension();
         echo '<br>';
 
         //Display File Real Path
-        echo 'File Real Path: '.$file->getRealPath();
+        echo 'File Real Path: '.$requestFile->getRealPath();
         echo '<br>';
 
         //Display File Size
-        echo 'File Size: '.$file->getSize();
+        echo 'File Size: '.$requestFile->getSize();
         echo '<br>';
 
         //Display File Mime Type
-        echo 'File Mime Type: '.$file->getMimeType();
+        echo 'File Mime Type: '.$requestFile->getMimeType();
 
         //Move Uploaded File
         $destinationPath = 'uploads';
-        $file->move($destinationPath,$file->getClientOriginalName());
-
-        echo "<br/>";
-        $fileDummy = base_path() . '/uploads/' . $file->getClientOriginalName();
-        $stemming_doc1 = $this->stemming($fileDummy);
-        $stopword_doc1 = $this->stopWord($stemming_doc1);
-        print_r($stopword_doc1);
+        $requestFile->move($destinationPath,$requestFile->getClientOriginalName());
+        return base_path() . '/uploads/' . $requestFile->getClientOriginalName();
     }
+
 
     private function stemming($fileDummy) {
         $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();

@@ -26,12 +26,13 @@ Route::get('register', function() {
     return view('register');
 });
 
-Route::post('/document', 'HomeController@submitDocument');
+Route::post('document', 'HomeController@submitDocument');
 
+Route::get('dashboard', 'AdminController@index');
 
-Route::get('/testdocument', 'HomeController@testdocument');
-Route::get('/testdocument2', 'HomeController@testdocument2');
-Route::get('/testdocument3', 'HomeController@testdocument3');
+Route::get('testdocument', 'HomeController@testdocument');
+Route::get('testdocument2', 'HomeController@testdocument2');
+Route::get('testdocument3', 'HomeController@testdocument3');
 
 
 Auth::routes();
