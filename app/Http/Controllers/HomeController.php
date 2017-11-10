@@ -9,6 +9,7 @@ use File;
 use Storage;
 use Auth;
 
+use App\Http\Controllers\Pdf2Text;
 
 class HomeController extends Controller
 {
@@ -23,69 +24,82 @@ class HomeController extends Controller
     }
 
     public function testdocument() {
-        $source = base_path() . '/ext/bab4.docx';
+        $source = base_path() . '/ext/bab4.pdf';
         echo $source;
 
-        echo $this->read_docx($source);
+
+
+        echo $this->read_pdf($source);
     }
 
+
+
     public function submitDocument(Request $request) {
-        $file1 = $request->file('doc1');
-        $file2 = $request->file('doc2');
-
-        $uploadFile1 = $this->uploadFile($file1);
-        echo "<br/>";
-        $uploadFile2 = $this->uploadFile($file2);
-
-        echo "<br/>";
-        $stemming_doc1 = $this->stemming($uploadFile1);
-        $stopword_doc1 = $this->stopWord($stemming_doc1);
-
-        $stemming_doc2 = $this->stemming($uploadFile2);
-        $stopword_doc2 = $this->stopWord($stemming_doc2);
-        // print_r($stopword_doc1);
-
-        $kumpulanKataDoc1 = '';
-        foreach($stopword_doc1 as $stopword) {
-            $kumpulanKataDoc1 = $kumpulanKataDoc1 . ' ' . $stopword;
-        }
-
-        $kumpulanKataDoc2 = '';
-        foreach($stopword_doc2 as $stopword) {
-            $kumpulanKataDoc2 = $kumpulanKataDoc2 . ' ' . $stopword;
-        }
-
-        $rkDoc1 = array();
-        $rkDoc2 = array();
-
-        $rkString1 = '';
-        $rkString2 = '';
-
-        foreach($stopword_doc1 as $stopword) {
-            $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc2);
-            if(!empty($hasil)) {
-                array_push($rkDoc1, $hasil);
-                $rkString1 .= ' ' . $hasil;
-            }
-        }
-
-        foreach($stopword_doc2 as $stopword) {
-            $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc1);
-            if(!empty($hasil)) {
-                array_push($rkDoc2, $hasil);
-                $rkString2 .= ' ' . $hasil;
-            }
-        }
-
-        $similarity = $this->DiceMatch($rkString1, $rkString2);
-
-        return view('hasil')->with([
-            'doc1' => $stopword_doc1,
-            'doc2' => $stopword_doc2,
-            'rkDoc1' => $rkDoc1,
-            'rkDoc2' => $rkDoc2,
-            'similarity' => $similarity,
+        $this->validate($request, [
+            'doc1' => 'required|mimes:doc,docx,pdf,txt',
+            'doc2' => 'required|mimes:doc,docx,pdf,txt',
         ]);
+
+        if($request->hasFile('doc1') && $request->hasFile('doc2')) {
+            $file1 = $request->file('doc1');
+            $file2 = $request->file('doc2');
+
+            $uploadFile1 = $this->uploadFile($file1);
+            echo "<br/>";
+            $uploadFile2 = $this->uploadFile($file2);
+
+            echo "<br/>";
+            $stemming_doc1 = $this->stemming($uploadFile1, $file1);
+            $stopword_doc1 = $this->stopWord($stemming_doc1);
+
+            $stemming_doc2 = $this->stemming($uploadFile2, $file2);
+            $stopword_doc2 = $this->stopWord($stemming_doc2);
+            // print_r($stopword_doc1);
+
+            $kumpulanKataDoc1 = '';
+            foreach($stopword_doc1 as $stopword) {
+                $kumpulanKataDoc1 = $kumpulanKataDoc1 . ' ' . $stopword;
+            }
+
+            $kumpulanKataDoc2 = '';
+            foreach($stopword_doc2 as $stopword) {
+                $kumpulanKataDoc2 = $kumpulanKataDoc2 . ' ' . $stopword;
+            }
+
+            $rkDoc1 = array();
+            $rkDoc2 = array();
+
+            $rkString1 = '';
+            $rkString2 = '';
+
+            foreach($stopword_doc1 as $stopword) {
+                $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc2);
+                if(!empty($hasil)) {
+                    array_push($rkDoc1, $hasil);
+                    $rkString1 .= ' ' . $hasil;
+                }
+            }
+
+            foreach($stopword_doc2 as $stopword) {
+                $hasil = $this->rabinKarp($stopword, $kumpulanKataDoc1);
+                if(!empty($hasil)) {
+                    array_push($rkDoc2, $hasil);
+                    $rkString2 .= ' ' . $hasil;
+                }
+            }
+
+            $similarity = $this->DiceMatch($rkString1, $rkString2);
+
+            return view('hasil')->with([
+                'doc1' => $stopword_doc1,
+                'doc2' => $stopword_doc2,
+                'rkDoc1' => $rkDoc1,
+                'rkDoc2' => $rkDoc2,
+                'similarity' => $similarity,
+            ]);
+        } else {
+            return redirect('/');
+        }
     }
 
     function DiceMatch($string1, $string2) {
@@ -195,10 +209,32 @@ class HomeController extends Controller
     }
 
 
-    private function stemming($fileDummy) {
+    private function stemming($pathFile, $file) {
         $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
         $stemmer  = $stemmerFactory->createStemmer();
-        $sentence = $this->read_docx($fileDummy);
+
+        // Put Format of File here 
+        echo $file->getClientOriginalExtension();
+        switch ($file->getClientOriginalExtension()) {
+            case 'docx' :
+                $sentence = $this->read_docx($pathFile);
+                break;
+            case 'doc' : 
+                $sentence = $this->read_doc($pathFile);
+                break;
+            case 'pdf' :
+                $sentence = $this->read_pdf($pathFile);
+            break;
+            case 'txt' :
+                $sentence = $this->read_txt($pathFile);
+            break;
+            default:
+                echo "Wrong format file";
+        }
+
+        // $sentence = $this->read_docx($pathFile);
+        
+
         $output   = $stemmer->stem($sentence);
         return $output;
     }
@@ -213,6 +249,17 @@ class HomeController extends Controller
         $words = array_values($words);//re-indexes array
         $numWordsOut = count($words);
         return $words;
+    }
+
+    private function read_pdf ($pathFile) {
+        $a = new PDF2Text();
+        $a->setFilename($pathFile); 
+        $a->decodePDF();
+        return $a->output(); 
+    }
+
+    private function read_txt($pathFile) {
+        return file_get_contents($pathFile);
     }
 
     private function read_docx($filename){
@@ -245,7 +292,7 @@ class HomeController extends Controller
 
     private function read_doc($filename) {
         $fileHandle = fopen($filename, "r");
-        $line = @fread($fileHandle, filesize($this->filename));   
+        $line = @fread($fileHandle, filesize($filename));   
         $lines = explode(chr(0x0D),$line);
         $outtext = "";
         foreach($lines as $thisline)
