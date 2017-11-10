@@ -39,6 +39,7 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="nav navbar-nav">
                         &nbsp;
+                        <li><a href="{{url('aboutus')}}">About Us</a></li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->

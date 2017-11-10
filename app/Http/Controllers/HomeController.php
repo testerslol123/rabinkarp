@@ -23,6 +23,14 @@ class HomeController extends Controller
         }
     }
 
+    public function aboutus() {
+        if(Auth::check()) {
+            return view('aboutus/aboutus')->with('userInfo', Auth::user());
+        } else {
+            return view('aboutus/aboutus');
+        }
+    }
+
     public function testdocument() {
         $source = base_path() . '/ext/bab4.pdf';
         echo $source;
