@@ -34,9 +34,6 @@ class HomeController extends Controller
     public function testdocument() {
         $source = base_path() . '/ext/bab4.pdf';
         echo $source;
-
-
-
         echo $this->read_pdf($source);
     }
 
@@ -133,8 +130,9 @@ class HomeController extends Controller
             $b = substr($string2, $j, 2);
             $cmp = strcasecmp($a, $b);
 
-            if ($cmp == 0)
-            $matches += 2;
+            if ($cmp == 0) {
+                $matches += 2;
+            }
 
             ++$i;
             ++$j;
@@ -240,10 +238,7 @@ class HomeController extends Controller
                 echo "Wrong format file";
         }
 
-        // $sentence = $this->read_docx($pathFile);
-        
-
-        $output   = $stemmer->stem($sentence);
+        $output = $stemmer->stem($sentence);
         return $output;
     }
 
@@ -314,17 +309,6 @@ class HomeController extends Controller
           }
          $outtext = preg_replace("/[^a-zA-Z0-9\s\,\.\-\n\r\t@\/\_\(\)]/","",$outtext);
         return $outtext;
-    }
-
-
-    public function testdocument3 () {
-        $content = File::get(base_path() .'/ext/file.txt');
-        print_r($content);
-        // foreach($content as $line) {
-        // //use $line
-        // echo $line; 
-        // }
-
     }
 
 }

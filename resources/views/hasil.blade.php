@@ -39,12 +39,26 @@
   <hr>
   <div class="row">
     <div class="text-center">
+      <h3>Kesamaan Hash yang didapati</h3>
+    </div>
+    <div class="text-center">
+      @foreach($rkDoc1 as $rk1)
+        @foreach($rkDoc2 as $rk2)
+          @if($rk1 == $rk2) 
+            <span>{ {{$rk1}} }</span>
+          @endif
+        @endforeach
+      @endforeach
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="text-center">
       <h4>Hasil Sorensen Index Similarity</h4>
     </div>
     <div class="text-center">
       <h3>{{$similarity * 100}} %</h3>
     </div>
   </div>
-
 </div>
 @endsection
