@@ -28,6 +28,7 @@ Route::get('register', function() {
 });
 
 Route::post('document', 'HomeController@submitDocument');
+Route::post('document2', 'HomeController@submit2');
 
 Route::get('dashboard', 'AdminController@index');
 Route::get('edituser/{user_id}', 'AdminController@edituser');

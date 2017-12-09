@@ -107,6 +107,23 @@ class HomeController extends Controller
         }
     }
 
+
+    public function submit2 (Request $request) {
+        $file1 = $request->file('doc1');
+        $file2 = $request->file('doc2');
+
+        $uploadFile1 = $this->uploadFile($file1);
+        echo "<br/>";
+        $uploadFile2 = $this->uploadFile($file2);
+
+        echo "<br/>";
+        $stemming_doc1 = $this->stemming($uploadFile1, $file1);
+
+        $stemming_doc2 = $this->stemming($uploadFile2, $file2);
+
+    }
+
+
     function DiceMatch($string1, $string2) {
         if (empty($string1) || empty($string2)) return 0;
 
@@ -238,7 +255,35 @@ class HomeController extends Controller
                 echo "Wrong format file";
         }
 
-        $output = $stemmer->stem($sentence);
+        $output = explode(" ", $sentence);
+        $array_kalimat = array();
+        $i = 0;
+        $j = 0;
+        $stringPakai = '';
+        $tampung_kata = '';
+
+        echo "<br>";
+
+        foreach($output as $data)
+        {
+            $stringPakai .= $data . " ";
+            $titik = str_split($data);
+            // print_r($titik);
+            foreach($titik as $findtitik)
+            {
+                if($findtitik == ".")
+                {
+                    $stringPakai = $stringPakai . "_";
+                    $array_kalimat = explode("_",$stringPakai);
+                }
+            }
+        }
+
+        foreach($array_kalimat as $lk){
+            echo $array_kalimat[1];
+        }
+
+
         return $output;
     }
 
